@@ -1,30 +1,29 @@
-## OW API
+## OWProfile
 
-[Donate to keep OWAPI alive](https://www.patreon.com/sundwarf)
+[Donate to keep OWAPI alive, this is pretty much 99% their work](https://www.patreon.com/sundwarf)
 
-This server is a simple way to get read-only information about player statistics in the game
-Overwatch by Blizzard.
-**A live version runs on https://owapi.net.**  
+This is a fork of https://github.com/Fuyukai/OWAPI but basically just cut down to work as a module that you can import rather than run as a REST API.
+
+## Other differences from OWAPI
+
+* This library doesn't have any functions to retrieve information about the heroes themselves. 
+* `get_stats()` returns both hero stats (including playtime) and gamemode-specific stats
+* Requires that you download the HTML page of the player whose data you want, this is so you can use whatever external tool you want to handle the downloads.
+* No asyncio. No idea if you can run this in parallel somehow but I don't really care.
+* No regions or platforms. No idea if this works with Xbox/Playstation, if it doesn't feel free to notify me or send a pull request.
 
 ## Game data
 
 This API does not aim to expose data about the heroes, maps, etc in the game. For that, use 
 https://github.com/jamesmcfadden/overwatch-api. 
+
+It basically just returns the same stuff as OWAPI so if you want to see what you're getting just look here: https://github.com/Fuyukai/OWAPI/blob/master/api.md
+
+I do have something in mind to fix getting the correct level as prestiges + level don't accurately reflect the level of a player who is level 1800+, but I don't know if I'll get around to that.
  
 ## API Docs
 
-OWAPI has a very simple RESTful API to get information.  
-As the API is read-only, the only method required is `GET`.  
-
-See the [doc](/api.md) for more information. 
-
-
-### Running an instance
-
-OWAPI has a few requirements:
-
- - A Python version >3.5
- - Probably a Linux-based server; I don't know about the viability of running it on Windows.
+OWProfile functions return JSON dicts.   
  
 **Installation steps:**
 
@@ -32,20 +31,7 @@ OWAPI has a few requirements:
  
      `git clone https://github.com/SunDwarf/OWAPI.git`
      
- 2. **Setup a Redis server.**
- 
-     Redis should be running on the default port - 6379. You can override this in config.yml;
-     however.
-     Redis is used for caching lots of data so that there's not a 10 second delay on
-     EVERY request as the data is fetched and scraped; it is essential.
-     
-     For Debian/Ubuntu, you can install one with:
-     `sudo apt install redis-server`
-     
-     You can enable it with:
-     `sudo systemctl enable redis-server && sudo systemctl start redis-server`.
-     
- 4. **Install the requirements.**
+ 2. **Install the requirements.**
 
      For debian-based systems, run this first:
         `sudo apt install libxslt-dev python3-dev build-essential zlib1g-dev pkg-config`
@@ -53,15 +39,6 @@ OWAPI has a few requirements:
      To set up the virtualenv:
      `pipenv install`
 
- 5. **Copy and tweak the example config file.**
+ 3. **Import owprofile.**
+    `import owprofile *`
 
-    `cp config.example.yml config.yml`
-     
- 6. **Start the OWAPI server.**
- 
-     `PYTHONPATH=. pipenv run asphalt run config.yml`
-     
-     The server is now running on http://localhost:4444/
-          
-     Note: If you want the full speedups from Kyoukai you must run with uvloop enabled:
-     `PYTHONPATH=. pipenv run asphalt run -l uvloop config.yml`

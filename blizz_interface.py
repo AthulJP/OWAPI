@@ -10,9 +10,8 @@ try:
     _has_html5_parser = True
 except ImportError:
     _has_html5_parser = False
-from werkzeug.exceptions import HTTPException, NotFound, InternalServerError
 
-from owapi import util
+import util
 
 # The currently available specific regions.
 
@@ -28,7 +27,7 @@ def get_page_body(filename: str) -> str:
     return page_body
 
 
-def _parse_page_html5(content: str) -> etree._Element:
+def parse_page_html5(content: str) -> etree._Element:
     """
     Internal function to parse a page and return the data.
 
@@ -39,7 +38,7 @@ def _parse_page_html5(content: str) -> etree._Element:
         return data
 
 
-def _parse_page_lxml(content: str) -> etree._Element:
+def parse_page_lxml(content: str) -> etree._Element:
     """
     Internal function to parse a page and return the data.
 
@@ -60,7 +59,7 @@ def get_user_page(filename: str) -> etree._Element:
         return None
 
     # parse the page
-    parsed = _parse_page(page_body)
+    parsed = parse_page(page_body)
 
     # sanity check
     node = parsed.findall(".//section[@class='u-nav-offset']//h1[@class='u-align-center']")
@@ -72,6 +71,6 @@ def get_user_page(filename: str) -> etree._Element:
 
 
 if _has_html5_parser:
-    _parse_page = _parse_page_html5
+    parse_page = parse_page_html5
 else:
-    _parse_page = _parse_page_lxml
+    parse_page = parse_page_lxml

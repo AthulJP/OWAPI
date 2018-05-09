@@ -3,8 +3,8 @@ Parsing the data returned from Blizzard.
 """
 from lxml import etree
 
-from owapi import util
-from owapi.prestige import PRESTIGE
+import util
+from prestige import PRESTIGE
 
 hero_data_div_ids = {
     "reaper": "0x02E0000000000002",
@@ -452,29 +452,3 @@ def bl_parse_achievement_data(parsed: etree._Element, mode="quickplay"):
         built_dict[category_name.lower()] = n_dict
 
     return built_dict
-
-
-def bl_find_heroes(parsed: etree._Element):
-    # Start the dict.
-    built_dict = {"role": "", "difficulty": "", "abilities": {}}
-
-    difficulty = len(parsed.findall(".//span[@class='star']"))
-    role = parsed.xpath(".//h4[@class='h2 hero-detail-role-name']")[0].text
-    _abilities = parsed.findall(".//div[@class='hero-ability-descriptor']")
-    abilities = {}
-
-    for ability in _abilities:
-        name, description = ability[0].text, ability[1].text
-        abilities[name] = description
-
-    built_dict["difficulty"] = difficulty
-    built_dict["role"] = role
-    built_dict["abilities"] = abilities
-
-    return built_dict
-
-
-def bl_get_all_heroes(parsed: etree._Element):
-    _heroes = parsed.findall(".//a[@class='hero-portrait-detailed']")
-    heroes = [hero.get("data-hero-id") for hero in _heroes]
-    return heroes
