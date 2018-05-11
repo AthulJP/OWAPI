@@ -48,7 +48,12 @@ def get_stats(filename: str):
 
     built_dict["stats"]["quickplay"] = bl_parse_stats(page)
     built_dict["stats"]["competitive"] = bl_parse_stats(page, mode="competitive")
+    
+    built_dict["heroes"]["stats"]["quickplay"] = bl_parse_hero_data(page)
+    built_dict["heroes"]["playtime"]["quickplay"] = bl_parse_all_heroes(page)
 
+    built_dict["heroes"]["stats"]["competitive"] = bl_parse_hero_data(page, mode="competitive")
+    built_dict["heroes"]["playtime"]["competitive"] = bl_parse_all_heroes(page, mode="competitive")
     return built_dict
 
 def get_heroes(filename: str):
