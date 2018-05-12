@@ -7,7 +7,6 @@ This is a fork of https://github.com/Fuyukai/OWAPI but basically just cut down t
 ## Other differences from OWAPI
 
 * This library doesn't have any functions to retrieve information about the heroes themselves. 
-* `get_stats()` returns both hero stats (including playtime) and gamemode-specific stats
 * Requires that you download the HTML page of the player whose data you want, this is so you can use whatever external tool you want to handle the downloads.
 * No asyncio. No idea if you can run this in parallel somehow but I don't really care.
 * No regions or platforms. No idea if this works with Xbox/Playstation, if it doesn't feel free to notify me or send a pull request.
