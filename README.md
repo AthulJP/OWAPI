@@ -42,7 +42,7 @@ OWProfile functions return JSON dicts with the statistics from the HTML of a pla
  3. **Import owprofile.**
     `import owprofile *`
 
-##Example
+## Example
 
 
     import owprofile
