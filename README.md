@@ -73,7 +73,8 @@ OWProfile functions return JSON dicts with the statistics from the HTML of a pla
 
 **Which returns**
 
-    {
+```json
+{
   "stats": {
     "quickplay": {
       "game_stats": {
@@ -2103,4 +2104,4 @@ OWProfile functions return JSON dicts with the statistics from the HTML of a pla
     }
   }
 }
-
+```
