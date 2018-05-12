@@ -11,22 +11,6 @@ try:
 except ImportError:
     _has_html5_parser = False
 
-import util
-
-# The currently available specific regions.
-
-
-def get_page_body(filename: str) -> str:
-    """
-    Get HTML page body
-    """
-
-    page_file = open(filename, 'r')
-    page_body = page_file.read()
-    
-    return page_body
-
-
 def parse_page_html5(content: str) -> etree._Element:
     """
     Internal function to parse a page and return the data.
@@ -49,25 +33,20 @@ def parse_page_lxml(content: str) -> etree._Element:
         return data
 
 
-def get_user_page(filename: str) -> etree._Element:
+def get_user_page(page_text: str) -> etree._Element:
     """
-    Downloads the BZ page for a user, and parses it.
+    Takes the contents of the HTML file and parses it, pass this to the data parsing functions.
     """
-    page_body = get_page_body(filename)
-
-    if not page_body:
-        return None
-
     # parse the page
-    parsed = parse_page(page_body)
+    user_page = parse_page(page_text)
 
     # sanity check
-    node = parsed.findall(".//section[@class='u-nav-offset']//h1[@class='u-align-center']")
+    node = user_page.findall(".//section[@class='u-nav-offset']//h1[@class='u-align-center']")
     for nodes in node:
         if nodes.text.strip() == "Profile Not Found":
             return None
 
-    return parsed
+    return user_page
 
 
 if _has_html5_parser:

@@ -41,7 +41,7 @@ def parse_time(val: str) -> float:
         return float(hours)
 
 
-def try_extract(value):
+def try_extract_time(value):
     """
     Attempt to extract a meaningful value from the time.
     """

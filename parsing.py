@@ -3,8 +3,8 @@ Parsing the data returned from Blizzard.
 """
 from lxml import etree
 
-import util
-from prestige import PRESTIGE
+import owprofile.util as util
+from owprofile.prestige import PRESTIGE
 
 hero_data_div_ids = {
     "reaper": "0x02E0000000000002",
@@ -47,7 +47,7 @@ tier_data_img_src = {
 }
 
 
-def bl_parse_stats(parsed, mode="quickplay"):
+def parse_stats(user_page, mode="quickplay"):
     # Just a quick FYI
     # If future me or future anyone else is looking at this, I do not how this code works.
     # I'm really really hoping it doesn't break.
@@ -55,7 +55,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
 
     try:
         # XPath for the `u-align-center` h6 which signifies there's no data.
-        no_data = parsed.xpath(".//div[@id='{}']//ul/h6[@class='u-align-center']".format(mode))[0]
+        no_data = user_page.xpath(".//div[@id='{}']//ul/h6[@class='u-align-center']".format(mode))[0]
     except IndexError:
         pass
     else:
@@ -66,7 +66,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
     built_dict = {"game_stats": [], "overall_stats": {}, "average_stats": []}
 
     # Shortcut location for player level etc
-    mast_head = parsed.xpath(".//div[@class='masthead-player']")[0]
+    mast_head = user_page.xpath(".//div[@class='masthead-player']")[0]
 
     # Get the prestige.
     prestige = mast_head.xpath(".//div[@class='player-level']")[0]
@@ -124,7 +124,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
         # the competitive overview is under a div with id='competitive'
         # and the right category
         try:
-            stat_groups = parsed.xpath(
+            stat_groups = user_page.xpath(
                 ".//div[@id='competitive']"
                 "//div[@data-group-id='stats' and @data-category-id='0x02E00000FFFFFFFF']"
             )[0]
@@ -133,7 +133,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
             return None
     elif mode == "quickplay":
         try:
-            stat_groups = parsed.xpath(
+            stat_groups = user_page.xpath(
                 ".//div[@id='quickplay']"
                 "//div[@data-group-id='stats' and @data-category-id='0x02E00000FFFFFFFF']"
             )[0]
@@ -142,7 +142,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
             return None
     else:
         # how else to handle fallthrough case?
-        stat_groups = parsed.xpath(
+        stat_groups = user_page.xpath(
             ".//div[@data-group-id='stats' and @data-category-id='0x02E00000FFFFFFFF']"
         )[0]
 
@@ -218,7 +218,7 @@ def bl_parse_stats(parsed, mode="quickplay"):
             name, value = util.sanitize_string(subval[0].text), subval[1].text
             # Try and parse out the value. It might be a time!
             # If so, try and extract the time.
-            nvl = util.try_extract(value)
+            nvl = util.try_extract_time(value)
 
             if 'average' in name.lower():
                 average_stats[name.replace("_average", "_avg")] = nvl
@@ -279,10 +279,10 @@ def bl_parse_stats(parsed, mode="quickplay"):
     return built_dict
 
 
-def bl_parse_all_heroes(parsed, mode="quickplay"):
+def parse_hero_playtime(user_page, mode="quickplay"):
     built_dict = {}
 
-    _root = parsed.xpath(".//div[@id='{}']".format(mode))
+    _root = user_page.xpath(".//div[@id='{}']".format(mode))
     try:
         # XPath for the `u-align-center` h6 which signifies there's no data.
         no_data = _root[0].xpath(".//ul/h6[@class='u-align-center']".format(mode))[0]
@@ -293,9 +293,9 @@ def bl_parse_all_heroes(parsed, mode="quickplay"):
             return None
 
     if mode == "competitive":
-        _root = parsed.findall(".//div[@data-mode='competitive']")[0]
+        _root = user_page.findall(".//div[@data-mode='competitive']")[0]
     else:
-        _root = parsed
+        _root = user_page
 
     _hero_info = _root.findall(".//div[@data-group-id='comparisons']")[0]
     hero_info = _hero_info.findall(".//div[@class='bar-text']")
@@ -308,7 +308,7 @@ def bl_parse_all_heroes(parsed, mode="quickplay"):
 
         time = 0
         if played != "--":
-            time = util.try_extract(played)
+            time = util.try_extract_time(played)
 
         # More accurate playtime calculation
         # Requires reversing hero_info
@@ -325,11 +325,11 @@ def bl_parse_all_heroes(parsed, mode="quickplay"):
     return built_dict
 
 
-def bl_parse_hero_data(parsed: etree._Element, mode="quickplay"):
+def parse_hero_stats(user_page: etree._Element, mode="quickplay"):
     # Start the dict.
     built_dict = {}
 
-    _root = parsed.xpath(
+    _root = user_page.xpath(
         ".//div[@id='{}']".format("competitive" if mode == "competitive" else "quickplay")
     )
     if not _root:
@@ -386,7 +386,7 @@ def bl_parse_hero_data(parsed: etree._Element, mode="quickplay"):
                     into = _rolling_avgs
                 else:
                     into = _t_d
-                nvl = util.try_extract(value)
+                nvl = util.try_extract_time(value)
                 into[name] = nvl
 
         n_dict["hero_stats"] = _t_d
@@ -403,7 +403,7 @@ def bl_parse_hero_data(parsed: etree._Element, mode="quickplay"):
                     name = name.replace("_avg_per_10_min", "")
                 else:
                     into = _t_d
-                nvl = util.try_extract(value)
+                nvl = util.try_extract_time(value)
                 into[name] = nvl
 
         n_dict["general_stats"] = _t_d
@@ -415,11 +415,11 @@ def bl_parse_hero_data(parsed: etree._Element, mode="quickplay"):
     return built_dict
 
 
-def bl_parse_achievement_data(parsed: etree._Element, mode="quickplay"):
+def parse_achievement_data(user_page: etree._Element):
     # Start the dict.
     built_dict = {}
 
-    _root = parsed.xpath(
+    _root = user_page.xpath(
         ".//section[@id='achievements-section']"
     )
     if not _root:
